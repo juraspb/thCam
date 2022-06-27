@@ -20,7 +20,9 @@ mutex w_img;
 
 volatile char key;
 bool done = false;  // Flag to determine when user wants to end program
+int bw = 0;         // Flag BW
 int led_pin = 7;    // Pin Definitions
+string settingsWin = "Settings";
 
 // Function called by Interrupt
 void signalHandler (int s){
@@ -39,9 +41,16 @@ int camera(string URL)
   while(!done) {
     if (cap.read(frame)) {
       //cout << frame.size()<<endl;
-      //cvtColor(frame, gray, COLOR_BGR2GRAY);
-      //imshow(URL, gray);
-      imshow(URL, frame);
+      if (bw==0) {
+        //cout << frame.size()<<endl;
+        //cvtColor(frame, gray, COLOR_BGR2GRAY);
+        //imshow(URL, gray);
+        imshow(URL, frame);
+      } 
+      else {
+        cvtColor(frame, gray, COLOR_BGR2GRAY);
+        imshow(URL, gray);
+      }
     }	
     else {
       return -1;
@@ -53,7 +62,17 @@ int camera(string URL)
   return 0;
 }
 
-
+void on_btn(int position)
+{
+ if (position==0) {
+  // 
+  bw = 0;
+ }
+ else {
+  //
+  bw = 1;
+ }
+}
 
 int main()
 {
@@ -63,6 +82,11 @@ int main()
 
   // When CTRL+C pressed, signalHandler will be called to interrupt the programs execution
   signal(SIGINT, signalHandler);
+
+  namedWindow(settingsWin, WINDOW_NORMAL);
+  resizeWindow(settingsWin, 320, 120);
+  moveWindow(settingsWin, 720, 0);
+  createTrackbar("BW", settingsWin, &bw, 1);
 
   //string URL = "/home/yuriy/Videos/ul1.rec";                                              //from files
   //string URL = "rtsp://admin:pP@697469@192.168.1.102:554/Stream/Channel/101";             //hikvision
