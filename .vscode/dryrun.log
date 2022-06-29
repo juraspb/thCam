@@ -1,5 +1,5 @@
 make --dry-run --always-make --keep-going --print-directory
 make: Entering directory '/home/yuriy/Projects/thCam'
-g++ source/typhoon.cpp -g -pthread -o build/typhoon `pkg-config opencv4 --cflags --libs`
+g++ source/typhoon.cpp `pkg-config opencv4 --cflags --libs` -I include -g -pthread -o build/typhoon
 make: Leaving directory '/home/yuriy/Projects/thCam'
  
