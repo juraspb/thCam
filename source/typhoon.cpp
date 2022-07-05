@@ -72,7 +72,7 @@ int main()
   //string URL = "rtsp://root:root@192.168.1.12/video_1";
   //string URL = "rtsp://192.168.11.167:8555/PSIA/Streaming/channels/0?videoCodecType=MJPEG";
   //string URL = "rtsp://192.168.11.167:8553/PSIA/Streaming/channels/1?videoCodecType=MPEG4";
-  string URL = "rtsp://admin:pP@697469@192.168.1.102:554/Stream/Channel/101";
+  string URL = "rtsp://admin:pP@697469@192.168.1.102:554/Stream/Channel/102";
 
   thread cam2(camera,URL);
 
