@@ -34,11 +34,12 @@ int videoON = 0;   // Flag videoON
 int fps = 0;
 int fps_count = 0;
 int pcktCount = 0;
-int framesCount = 0;
-char framesMemo[1440 * 320 * 3 * 8];
-char *framesPtr = framesMemo;
-char *frames[8];
-
+int framesIn = 0;
+int framesRead = 0;
+int framesReady = 0;
+unsigned char framesMemo[1440 * 320 * 3 * 8];
+unsigned char *framesPtr = framesMemo;
+unsigned char *frames[8];
 
 int led_pin = 7; // Pin Definitions
 string settingsWin = "Settings";
@@ -49,7 +50,7 @@ void signalHandler(int s)
   done = true;
 }
 
-int camera(string URL)
+int VEN257(string URL)
 {
   namedWindow(URL, WINDOW_NORMAL);
   resizeWindow(URL, 640, 480);
@@ -88,7 +89,57 @@ int camera(string URL)
   return 0;
 }
 
-int ves250(string URL)
+void imgDecode()
+{
+  unsigned char * frameptr;
+  int i=0;
+
+while (!done)
+  {
+    if (framesReady>0) {
+      framesRead = framesIn;
+      framesReady++;
+
+      if (framesIn!=framesRead) {
+        frameptr = frames[framesRead];
+        int k=0;
+        do {
+          while(*frameptr != 0xFF) {
+            frameptr++;
+            k++;
+          }
+          k++;
+          frameptr++;
+        } while(*frameptr != 0xD8);
+        frameptr++;
+
+        w_out.lock();
+
+        cout << k << "::" << short(*frameptr);
+/*
+        for (int j=0; j<8; j++) {
+          unsigned short bt = *frameptr++;  
+          cout << bt << ",";
+          //frameptr++;
+        }
+*/        
+        cout  << ", ... w:" << i << endl;
+      
+        //cout << "wait::" << i << "fps::" << fps << "к/c Пакетов:" << pcktCount << endl;
+        fps_count++;
+        pcktCount = 0;
+
+        w_out.unlock();
+
+        framesRead++;
+        framesRead &= 0x07;
+        i = 0;
+      } else  i++;
+    } 
+  }
+}
+
+int VES250(string URL)
 {
   // namedWindow(URL, WINDOW_NORMAL);
   // resizeWindow(URL, 320, 1440);
@@ -141,32 +192,23 @@ int ves250(string URL)
   while (!done)
   {
 
-    if (frames[framesCount] < 0)
-    {
-        cout << "Buffer FULL" << endl;
-    }
-    else
-    {
-
       int n = read(sock, framesPtr, 1500);
 
-      if (n == 48)
-      {
+      if (n == 48) {
         framesPtr += n;
-        frames[framesCount]=framesPtr;
 
-        framesCount++;
-        framesCount &= 0x07;
-        if (framesCount==0) framesPtr=framesMemo;
+        framesIn++;
+        framesIn &= 0x07;
+        //  первый кадр может быть не полным
+        if (framesReady<2) framesReady++;
 
-        w_out.lock();
-        cout << "fps::" << fps << "к/c Пакетов:" << pcktCount << endl;
-        fps_count++;
-        pcktCount = 0;
-        w_out.unlock();
+        if (framesIn==0) framesPtr=framesMemo; //restart to 
+        frames[framesIn]=framesPtr;
+        if (framesIn == framesRead)  {
+          cout << "Buffer FULL" << endl;
+        } 
       }
-      else
-      {
+      else {
         if (n == 1472)
         {
           framesPtr += n;
@@ -177,9 +219,6 @@ int ves250(string URL)
           cout << "error length::" << n << endl;
         }
       }
-    }
-    if (key == 'q')
-      break;
   }
 
   // If you want to use std::string:
@@ -194,16 +233,8 @@ int ves250(string URL)
 
 void on_btn(int position)
 {
-  if (position == 0)
-  {
-    //
-    bw = 0;
-  }
-  else
-  {
-    //
-    bw = 1;
-  }
+  if (position == 0) bw = 0;
+                else bw = 1;
 }
 
 int main()
@@ -228,8 +259,11 @@ int main()
   // string URL = "rtsp://root:root@192.168.1.12/video_1";                                   //ves-257
   string URL = "rtsp://192.168.1.167:8553/PSIA/Streaming/channels/1?videoCodecType=MPEG4"; // ves-556
 
-  thread cam2(camera, URL);
-  thread ves(ves250, "VES250");
+  frames[framesIn]=framesMemo;
+
+  thread decode(imgDecode);
+  thread ven(VEN257, URL);
+  thread ves(VES250, "VES250");
 
   int i = 0;
   while (!done)
@@ -241,12 +275,15 @@ int main()
     cout << "main:" << i << endl;
     w_out.unlock();
     i++;
-    if (key == 'q')
+    if (key == 'q') {
+      done = true;
       break;
+    }
   }
   // but call there
-  cam2.join();
+  ven.join();
   ves.join();
+  decode.join();
   this_thread::sleep_for(milliseconds(1000));
   destroyAllWindows();
   return 0;
