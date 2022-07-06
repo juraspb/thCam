@@ -177,7 +177,7 @@ int VES250(string URL)
 
   // Send String:
   buff[0] = 0x5A;
-  buff[1] = 0x86;
+  buff[1] = 0x88;
   buff[2] = 0x00;
   buff[3] = 0x00;
   buff[4] = 0x00;
@@ -197,6 +197,8 @@ int VES250(string URL)
       if (n == 48) {
         framesPtr += n;
 
+        fps_count++;
+
         framesIn++;
         framesIn &= 0x07;
         //  первый кадр может быть не полным
@@ -204,9 +206,11 @@ int VES250(string URL)
 
         if (framesIn==0) framesPtr=framesMemo; //restart to 
         frames[framesIn]=framesPtr;
+/*
         if (framesIn == framesRead)  {
           cout << "Buffer FULL" << endl;
         } 
+*/        
       }
       else {
         if (n == 1472)
@@ -261,8 +265,8 @@ int main()
 
   frames[framesIn]=framesMemo;
 
-  thread decode(imgDecode);
-  thread ven(VEN257, URL);
+  //thread decode(imgDecode);
+  //thread ven(VEN257, URL);
   thread ves(VES250, "VES250");
 
   int i = 0;
@@ -272,7 +276,7 @@ int main()
     w_out.lock();
     fps = fps_count;
     fps_count = 0;
-    cout << "main:" << i << endl;
+    cout << "main:" << i << "   fps:" << fps << endl;
     w_out.unlock();
     i++;
     if (key == 'q') {
@@ -281,9 +285,9 @@ int main()
     }
   }
   // but call there
-  ven.join();
+  //ven.join();
   ves.join();
-  decode.join();
+  //decode.join();
   this_thread::sleep_for(milliseconds(1000));
   destroyAllWindows();
   return 0;
