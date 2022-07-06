@@ -1,12 +1,12 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/videoio.hpp>
+//#include <opencv2/highgui.hpp>
+//#include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <thread>
 #include <mutex>
 #include <fstream>
-#include <unistd.h>
+//#include <unistd.h>
 #include <signal.h>
 #include <chrono>
 //#include <JetsonGPIO.h>
@@ -15,9 +15,9 @@
 #include <udpsocket.hpp>
 #include <sys/types.h>
 #include <stdlib.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <string.h>
-#include <netdb.h>
+//#include <netdb.h>
 #include <stdio.h>
 
 using namespace std;
@@ -301,3 +301,47 @@ int main()
     }
 
 */
+
+BITMAPINFO bmInfo;
+BITMAPINFOHEADER &bmInfohdr = (BITMAPINFOHEADER)bmInfo.bmiHeader;
+
+bmInfohdr.biSize = 40 + 255; //I think it's not of use
+bmInfohdr.biWidth = x;
+bmInfohdr.biHeight = y;
+bmInfohdr.biPlanes=1;
+bmInfohdr.biBitCount=8;
+bmInfohdr.biCompression=0;
+bmInfohdr.biSizeImage=0;
+bmInfohdr.biXPelsPerMeter = 0;
+bmInfohdr.biYPelsPerMeter = 0;
+bmInfohdr.biClrUsed = 0;
+bmInfohdr.biClrImportant = 0;
+
+           // should I allocate memory further than the 
+           // bmColors[1]?? anyway the compiler gives an
+           // error for type mismatch!
+//bmInfo.bmiColors = (RGBQUAD *) 
+                  malloc(sizeof(RGBQUAD) * 256);
+
+// here I define the 256 graylevel palette
+for (int i=0; i<256; i++)
+{
+   bmInfo.bmiColors[i].rgbRed = i;
+   bmInfo.bmiColors[i].rgbGreen = i;
+   bmInfo.bmiColors[i].rgbBlue = i;
+}
+
+
+BYTE *matrix;
+matrix = (BYTE*)malloc(size*sizeof(BYTE));
+// here I put the BYTE values of the pixels
+
+CDC *pdcDest = this->GetDC();
+
+HBITMAP hBmp = CreateDIBitmap( pdcDest->m_hDC,
+                &bmInfohdr,
+                CBM_INIT,
+                matrix,    
+                &bmInfo,
+                DIB_RGB_COLORS);
+m_bmpBitmap.Attach( hBmp );
