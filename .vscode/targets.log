@@ -1,4 +1,6 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -6,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jul  6 11:22:07 2022
+# Make data base, printed on Wed Jul  6 11:31:49 2022
 
 # Variables
 
@@ -125,7 +127,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 17008
+GIO_LAUNCHED_DESKTOP_FILE_PID = 24892
 # automatic
 %F = $(notdir $%)
 # environment
@@ -197,7 +199,7 @@ CC = g++
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-48d29305-95b6-4904-b56a-04b5bd8bc310.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-55610902-fa60-4a3a-a721-0285b7ed8e92.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -277,16 +279,14 @@ WINDOWPATH = 2
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # default
- 
-make: *** No rule to make target 'all'.  Stop.
-
 .RECIPEPREFIX := 
+ 
 # environment
 LC_ADDRESS = ru_RU.UTF-8
 # environment
 LANG = C
 # environment
-VSCODE_PID = 17055
+VSCODE_PID = 24941
 # variable set hash-table stats:
 # Load=137/1024=13%, Rehash=0, Collisions=23/164=14%
 
@@ -354,6 +354,6 @@ source/typhoon.cpp:
 # strcache performance: lookups = 22 / hit rate = 22%
 # hash-table stats:
 # Load=17/8192=0%, Rehash=0, Collisions=1/22=5%
-# Finished Make data base on Wed Jul  6 11:22:07 2022
+# Finished Make data base on Wed Jul  6 11:31:49 2022
 
  
