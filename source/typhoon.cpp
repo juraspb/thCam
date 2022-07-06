@@ -2,6 +2,8 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <udpsocket.hpp>
+#include <typhoon.hpp>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -12,7 +14,6 @@
 //#include <JetsonGPIO.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <udpsocket.hpp>
 #include <sys/types.h>
 #include <stdlib.h>
 //#include <unistd.h>
@@ -40,6 +41,11 @@ int framesReady = 0;
 unsigned char framesMemo[1440 * 320 * 3 * 8];
 unsigned char *framesPtr = framesMemo;
 unsigned char *frames[8];
+
+int sock, length, n;
+socklen_t fromlen;
+struct sockaddr_in server;
+struct sockaddr_in from;
 
 int led_pin = 7; // Pin Definitions
 string settingsWin = "Settings";
@@ -139,6 +145,49 @@ while (!done)
   }
 }
 
+void SET_VMODE(TMode mode)
+{
+  unsigned char buff[8];
+  buff[0] = 0x5A;
+  // buff[1] код команды 
+  buff[2] = 0x00;
+  buff[3] = 0x00;
+  buff[4] = 0x00;
+  buff[5] = 0x00;
+  buff[6] = 0x00;
+
+  switch (mode)
+  {
+    case modeOFF:
+      buff[1] = 0x81;
+    break;
+    case mode1440x320:
+      buff[1] = 0x81;
+    break;
+    case mode1440x320JPG:
+      buff[1] = 0x86;
+    break;
+    case mode1920x1080:
+      buff[1] = 0x84;
+    break;
+    case mode1920x1080JPG:
+      buff[1] = 0x85;
+    break;
+    case mode1440x48:
+      buff[1] = 0x89;
+    break;
+    default:
+      buff[1] = 0x88;
+    break;
+  }
+  buff[7] = 0;
+  for (int i; i<7; i++) buff[7] += buff[i];
+
+  // write(sock, buff, 8);
+  int flag = 0;
+  sendto(sock, buff, 8, flag, (struct sockaddr *)&from, fromlen);
+}
+  
 int VES250(string URL)
 {
   // namedWindow(URL, WINDOW_NORMAL);
@@ -149,13 +198,7 @@ int VES250(string URL)
   // const string IP = "192.168.1.46";
   const string IP = "192.168.1.47";
   const uint16_t PORT = 1047;
-  char buff[32];
-
-  int sock, length, n;
-  socklen_t fromlen;
-  struct sockaddr_in server;
-  struct sockaddr_in from;
-
+ 
   // Initialize socket.
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0)
@@ -175,20 +218,8 @@ int VES250(string URL)
   from.sin_addr.s_addr = inet_addr("192.168.1.47");
   from.sin_port = htons(PORT);
 
-  // Send String:
-  buff[0] = 0x5A;
-  buff[1] = 0x88;
-  buff[2] = 0x00;
-  buff[3] = 0x00;
-  buff[4] = 0x00;
-  buff[5] = 0x00;
-  buff[6] = 0x00;
-  buff[7] = buff[0] + buff[1];
-
-  // write(sock, buff, 8);
-  int flag = 0;
-  sendto(sock, buff, 8, flag, (struct sockaddr *)&from, fromlen);
-
+  SET_VMODE(mode1920x1080JPG);
+  
   while (!done)
   {
 
@@ -269,16 +300,15 @@ int main()
   //thread ven(VEN257, URL);
   thread ves(VES250, "VES250");
 
-  int i = 0;
   while (!done)
   {
     this_thread::sleep_for(milliseconds(1000));
     w_out.lock();
     fps = fps_count;
     fps_count = 0;
-    cout << "main:" << i << "   fps:" << fps << endl;
+    cout << "Packet:" << pcktCount << "   fps:" << fps << endl;
+    pcktCount = 0;
     w_out.unlock();
-    i++;
     if (key == 'q') {
       done = true;
       break;
