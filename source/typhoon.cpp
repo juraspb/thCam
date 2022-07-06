@@ -1,7 +1,7 @@
-//#include <opencv2/opencv.hpp>
-//#include <opencv2/videoio.hpp>
-//#include <opencv2/highgui.hpp>
-//#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -302,6 +302,7 @@ int main()
 
 */
 
+/*
 BITMAPINFO bmInfo;
 BITMAPINFOHEADER &bmInfohdr = (BITMAPINFOHEADER)bmInfo.bmiHeader;
 
@@ -316,6 +317,7 @@ bmInfohdr.biXPelsPerMeter = 0;
 bmInfohdr.biYPelsPerMeter = 0;
 bmInfohdr.biClrUsed = 0;
 bmInfohdr.biClrImportant = 0;
+
 
            // should I allocate memory further than the 
            // bmColors[1]?? anyway the compiler gives an
@@ -345,3 +347,4 @@ HBITMAP hBmp = CreateDIBitmap( pdcDest->m_hDC,
                 &bmInfo,
                 DIB_RGB_COLORS);
 m_bmpBitmap.Attach( hBmp );
+*/
